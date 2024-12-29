@@ -1,5 +1,3 @@
-#define DEBUG
-
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +29,8 @@ void parse_request(const char *request, Request req) {
 
   char *query_start = strchr(req->path, '?');
   if (query_start) {
+    LOG("Parsing query string\n");
+
     req->query = query_start + 1;
     *query_start = '\0';
   } else {
@@ -69,8 +69,7 @@ void handle_client(int client_socket) {
   Request req = init_request();
 
   parse_request(buffer, req);
-
-  LOG("Request: %s %s %s %s\n", req->method, req->path, req->query, req->body);
+  LOG("Parsed request\n");
 
   handle_request(req, client_socket);
 
