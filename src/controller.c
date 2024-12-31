@@ -6,6 +6,7 @@
 #include "controller.h"
 #include "template.h"
 #include "log.h"
+#include "user.h"
 
 void _internal_error(int client_socket) {
   char error_response[] = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
@@ -84,9 +85,31 @@ void post_register_controller(int client_socket, const Request request) {
     values[2] = email ? email : "";
     values[3] = "";
   } else {
-    // TODO: Save user to database
+    MYSQL *con;
+    init_db(&con);
 
-    values[0] = "Account Created!";
+    user email_usr = get_user_by_email(con, email);
+
+    if(email_usr != NULL) {
+      values[0] = "Email used";
+      free(email_usr);
+    } else {
+      user u = malloc(sizeof(struct sUser));
+      strncpy(u->name, name, 30);
+      strncpy(u->email, email, 30);
+      strncpy(u->password, password, 30);
+
+      if(insert_user(con, u)) {
+        values[0] = "Account Created!";
+      } else {
+        values[0] = "Failed!";
+      }
+
+      free(u);
+    }
+
+    close_db(con);
+
     values[1] = name;
     values[2] = email;
     values[3] = "";
