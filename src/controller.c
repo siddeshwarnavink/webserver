@@ -70,6 +70,97 @@ void home_controller(int client_socket, const Request request) {
   free(response_html);
 }
 
+void post_register_controller(int client_socket, const Request request) {
+  char *name = get_request_body(request, "name");
+  char *email = get_request_body(request, "email");
+  char *password = get_request_body(request, "password");
+
+  const char *placeholders[] = {"message", "name", "email", "password"};
+  const char *values[4];
+
+  if(!(name && strcmp(name, "") != 0 && email && strcmp(email, "") != 0 && password && strcmp(password, "") != 0)) {
+    values[0] = "Please fill in all fields";
+    values[1] = name ? name : "";
+    values[2] = email ? email : "";
+    values[3] = "";
+  } else {
+    // TODO: Save user to database
+
+    values[0] = "Account Created!";
+    values[1] = name;
+    values[2] = email;
+    values[3] = "";
+  }
+
+  char *response_html = render_template("register.html", placeholders, values, 4);
+  if (!response_html) {
+    _internal_error(client_socket);
+    return;
+  }
+  _render_html(client_socket, response_html);
+  free(response_html);
+  if (name) free(name);
+  if (email) free(email);
+  if (password) free(password);
+}
+
+void register_controller(int client_socket, const Request request) {
+  const char *placeholders[] = {"message", "name", "email", "password"};
+  const char *values[] = {"", "", "", ""};
+
+  char *response_html = render_template("register.html", placeholders, values, 4);
+  if (!response_html) {
+    _internal_error(client_socket);
+    return;
+  }
+  _render_html(client_socket, response_html);
+  free(response_html);
+}
+
+void login_controller(int client_socket, const Request request) {
+  const char *placeholders[] = {"message", "email", "password"};
+  const char *values[] = {"", "", ""};
+
+  char *response_html = render_template("login.html", placeholders, values, 3);
+  if (!response_html) {
+    _internal_error(client_socket);
+    return;
+  }
+  _render_html(client_socket, response_html);
+  free(response_html);
+}
+
+void post_login_controller(int client_socket, const Request request) {
+  char *email = get_request_body(request, "email");
+  char *password = get_request_body(request, "password");
+
+  const char *placeholders[] = {"message", "email", "password"};
+  const char *values[3];
+
+  if(!(email && strcmp(email, "") != 0 && password && strcmp(password, "") != 0)) {
+    values[0] = "Please fill in all fields";
+    values[1] = email ? email : "";
+    values[2] = "";
+  } else {
+    // TODO: Create session
+
+    values[0] = "Login successful!";
+    values[1] = email;
+    values[2] = "";
+  }
+
+  char *response_html = render_template("login.html", placeholders, values, 4);
+  if (!response_html) {
+    _internal_error(client_socket);
+    return;
+  }
+  _render_html(client_socket, response_html);
+  free(response_html);
+  if (email) free(email);
+  if (password) free(password);
+}
+
+
 void profile_controller(int client_socket, const Request request) {
   char name[100];
   sscanf(request->path, "/profile/%s", name);

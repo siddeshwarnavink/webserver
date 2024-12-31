@@ -121,6 +121,10 @@ int main() {
   // Register routes
   add_route("POST", "/ping", ping_controller);
   add_route("GET", "/", home_controller);
+  add_route("GET", "/register", register_controller);
+  add_route("POST", "/register", post_register_controller);
+  add_route("GET", "/login", login_controller);
+  add_route("POST", "/login", post_login_controller);
   add_route("GET", "/profile/:name", profile_controller);
 
   LOG("Routes registered\n");
