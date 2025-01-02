@@ -35,7 +35,7 @@ void _render_html(int client_socket, const char *html) {
   free(response);
 }
 
-void ping_controller(int client_socket, const Request request) {
+void ping_controller(context ctx, int client_socket, const request request) {
   char response[2048];
 
   snprintf(response, sizeof(response),
@@ -61,7 +61,7 @@ void ping_controller(int client_socket, const Request request) {
   close(client_socket);
 }
 
-void home_controller(int client_socket, const Request request) {
+void home_controller(context ctx, int client_socket, const request request) {
   char *response_html = render_template("home.html", NULL, NULL, 0);
   if (!response_html) {
     _internal_error(client_socket);
@@ -71,7 +71,7 @@ void home_controller(int client_socket, const Request request) {
   free(response_html);
 }
 
-void post_register_controller(int client_socket, const Request request) {
+void post_register_controller(context ctx, int client_socket, const request request) {
   char *name = get_request_body(request, "name");
   char *email = get_request_body(request, "email");
   char *password = get_request_body(request, "password");
@@ -85,10 +85,7 @@ void post_register_controller(int client_socket, const Request request) {
     values[2] = email ? email : "";
     values[3] = "";
   } else {
-    MYSQL *con;
-    init_db(&con);
-
-    user email_usr = get_user_by_email(con, email);
+    user email_usr = get_user_by_email(ctx.con, email);
 
     if(email_usr != NULL) {
       values[0] = "Email used";
@@ -99,7 +96,7 @@ void post_register_controller(int client_socket, const Request request) {
       strncpy(u->email, email, 30);
       strncpy(u->password, password, 30);
 
-      if(insert_user(con, u)) {
+      if(insert_user(ctx.con, u)) {
         values[0] = "Account Created!";
       } else {
         values[0] = "Failed!";
@@ -107,8 +104,6 @@ void post_register_controller(int client_socket, const Request request) {
 
       free(u);
     }
-
-    close_db(con);
 
     values[1] = name;
     values[2] = email;
@@ -127,7 +122,7 @@ void post_register_controller(int client_socket, const Request request) {
   if (password) free(password);
 }
 
-void register_controller(int client_socket, const Request request) {
+void register_controller(context ctx, int client_socket, const request request) {
   const char *placeholders[] = {"message", "name", "email", "password"};
   const char *values[] = {"", "", "", ""};
 
@@ -140,7 +135,7 @@ void register_controller(int client_socket, const Request request) {
   free(response_html);
 }
 
-void login_controller(int client_socket, const Request request) {
+void login_controller(context ctx, int client_socket, const request request) {
   const char *placeholders[] = {"message", "email", "password"};
   const char *values[] = {"", "", ""};
 
@@ -153,7 +148,7 @@ void login_controller(int client_socket, const Request request) {
   free(response_html);
 }
 
-void post_login_controller(int client_socket, const Request request) {
+void post_login_controller(context ctx, int client_socket, const request request) {
   char *email = get_request_body(request, "email");
   char *password = get_request_body(request, "password");
 
@@ -184,7 +179,7 @@ void post_login_controller(int client_socket, const Request request) {
 }
 
 
-void profile_controller(int client_socket, const Request request) {
+void profile_controller(context ctx, int client_socket, const request request) {
   char name[100];
   sscanf(request->path, "/profile/%s", name);
 

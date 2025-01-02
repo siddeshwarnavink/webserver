@@ -6,8 +6,9 @@
 #include <string.h>
 
 #include "request.h"
+#include "context.h"
 
-typedef void (*controller_func)(int, const Request);
+typedef void (*controller_func)(context, int, const request);
 
 typedef struct {
   char *method;
@@ -25,12 +26,13 @@ void add_route(const char *method, const char *path,
 
 /*
  * Register a route with the router
+ * @param ctx App context
  * @param method The HTTP method
  * @param path The path to match
  * @param controller The controller function to call
  */
 
-void handle_request(const Request request, int client_socket);
+void handle_request(context ctx, const request request, int client_socket);
 
 /*
  * Match a route to a request

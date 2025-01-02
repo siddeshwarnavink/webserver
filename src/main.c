@@ -3,14 +3,32 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
+#include <mysql/mysql.h>
 
+#include "context.h"
+#include "mem.h"
 #include "controller.h"
 #include "log.h"
 #include "request.h"
 #include "router.h"
+#include "db.h"
 
 #define PORT 3300
 #define BUFFER_SIZE 1024
+
+context ctx;
+
+void _clenup() {
+  mem_free_all();
+  close_db(ctx.con);
+}
+
+void handle_sigint(int sig) {
+  printf("Caught signal %d, cleaning up...\n", sig);
+  _clenup();
+  exit(0);
+}
 
 void print_banner() {
   printf("                __                                  \n");
@@ -22,10 +40,10 @@ void print_banner() {
 }
 
 /*
- * Parse the request and populate the Request struct
+ * Parse the request and populate the request struct
  */
-void parse_request(const char *request, Request req) {
-  sscanf(request, "%s %s", req->method, req->path);
+void parse_request(const char *buf, request req) {
+  sscanf(buf, "%s %s", req->method, req->path);
 
   char *query_start = strchr(req->path, '?');
   if (query_start) {
@@ -35,19 +53,22 @@ void parse_request(const char *request, Request req) {
     *query_start = '\0';
   } else {
     req->query = strdup("");
+    req->query_allocated = 1;
   }
 
   if (strcmp(req->method, "POST") == 0) {
     LOG("Parsing POST request\n");
 
-    char *body_start = strstr(request, "\r\n\r\n");
+    char *body_start = strstr(buf, "\r\n\r\n");
     if (body_start) {
       req->body = body_start + 4;
     } else {
       req->body = strdup("");
+      req->body_allocated = 1;
     }
   } else {
     req->body = strdup("");
+    req->body_allocated = 1;
   }
 }
 
@@ -66,14 +87,16 @@ void handle_client(int client_socket) {
 
   buffer[bytes_read] = '\0';
 
-  Request req = init_request();
+  request req = init_request();
 
   parse_request(buffer, req);
-  LOG("Parsed request\n");
+  LOG("parse_request done\n");
 
-  handle_request(req, client_socket);
+  handle_request(ctx, req, client_socket);
+  LOG("handle_request done\n");
 
-	free_request(req);
+	free_request(&req);
+  LOG("free_request done\n");
 }
 
 int main() {
@@ -82,16 +105,22 @@ int main() {
   int opt = 1;
   int addrlen = sizeof(server_address);
 
+  signal(SIGINT, handle_sigint);
+
+  init_db(&ctx.con);
+
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
     perror("Socket failed");
+    _clenup();
     exit(EXIT_FAILURE);
   }
 
   LOG("Socket created\n");
 
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                 sizeof(opt))) {
+        sizeof(opt))) {
     perror("Failed to set socket options");
+    _clenup();
     exit(EXIT_FAILURE);
   }
 
@@ -102,8 +131,9 @@ int main() {
   server_address.sin_port = htons(PORT);
 
   if (bind(server_fd, (struct sockaddr *)&server_address,
-           sizeof(server_address)) < 0) {
+        sizeof(server_address)) < 0) {
     perror("Failed to bind");
+    _clenup();
     exit(EXIT_FAILURE);
   }
 
@@ -111,6 +141,7 @@ int main() {
 
   if (listen(server_fd, 3) < 0) {
     perror("Failed to listen");
+    _clenup();
     exit(EXIT_FAILURE);
   }
 
@@ -131,8 +162,9 @@ int main() {
 
   while (1) {
     if ((client_socket = accept(server_fd, (struct sockaddr *)&client_address,
-                                (socklen_t *)&addrlen)) < 0) {
+            (socklen_t *)&addrlen)) < 0) {
       perror("Failed to accept");
+      _clenup();
       exit(EXIT_FAILURE);
     }
     handle_client(client_socket);

@@ -22,14 +22,14 @@ void add_route(const char *method, const char *path,
   routes_count++;
 }
 
-void handle_request(const Request request, int client_socket) {
+void handle_request(context ctx, const request request, int client_socket) {
   char param_value[256] = {0};
 
-  LOG("Request: %s %s %s %s\n", request->method, request->path, request->query, request->body);
+  LOG("request: %s %s %s %s\n", request->method, request->path, request->query, request->body);
 
   for (int i = 0; i < routes_count; i++) {
     if (strcmp(routes[i].method, request->method) == 0 && match_route(routes[i].path, request->path, param_value)) {
-      routes[i].controller(client_socket, request);
+      routes[i].controller(ctx, client_socket, request);
       return;
     }
   }
