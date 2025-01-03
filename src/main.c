@@ -58,7 +58,7 @@ void parse_request(const char *buf, request req) {
     req->query = query_start + 1;
     *query_start = '\0';
   } else {
-    req->query = strdup("");
+    req->query = mem_strdup("");
     req->query_allocated = 1;
   }
 
@@ -69,12 +69,27 @@ void parse_request(const char *buf, request req) {
     if (body_start) {
       req->body = body_start + 4;
     } else {
-      req->body = strdup("");
+      req->body = mem_strdup("");
       req->body_allocated = 1;
     }
   } else {
-    req->body = strdup("");
+    req->body = mem_strdup("");
     req->body_allocated = 1;
+  }
+
+  char *cookie_start = strstr(buf, "Cookie: ");
+  if(cookie_start) {
+    cookie_start += 8;
+    char *cookie_end = strstr(cookie_start, "\r\n");
+    if(cookie_end) {
+      size_t cookie_len = cookie_end - cookie_start;
+      req->cookies = (char *)mem_alloc(cookie_len);
+      req->cookies[cookie_len] = '\0';
+    } else {
+      req->cookies = mem_strdup("");
+    }
+  } else {
+    req->cookies = mem_strdup("");
   }
 }
 
@@ -157,6 +172,7 @@ int main() {
   printf("Server listening on port %d\n", PORT);
 
   // Register routes
+  add_route("GET", "/ping", ping_controller);
   add_route("POST", "/ping", ping_controller);
   add_route("GET", "/", home_controller);
   add_route("GET", "/register", register_controller);

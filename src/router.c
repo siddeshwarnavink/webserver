@@ -17,15 +17,6 @@
 static Route routes[MAX_ROUTES];
 static int routes_count = 0;
 
-char* _strdup(const char* s) {
-  size_t len = strlen(s) + 1;
-  char* copy = (char*)mem_alloc(len);
-  if (copy != NULL) {
-    memcpy(copy, s, len);
-  }
-  return copy;
-}
-
 /*
  * Match a route to a request
  * @param route_path The path of the route
@@ -63,8 +54,8 @@ void add_route(const char *method, const char *path,
     exit(EXIT_FAILURE);
   }
 
-  routes[routes_count].method = _strdup(method);
-  routes[routes_count].path = _strdup(path);
+  routes[routes_count].method = mem_strdup(method);
+  routes[routes_count].path = mem_strdup(path);
   routes[routes_count].controller = controller;
 
   routes_count++;

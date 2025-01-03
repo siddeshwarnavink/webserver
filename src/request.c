@@ -26,6 +26,7 @@ request init_request() {
 	req->query_allocated = 0;
 	req->body = NULL;
 	req->body_allocated = 0;
+	req->cookies = NULL;
 	if (req->method == NULL || req->path == NULL) {
 		mem_free(req->method);
 		mem_free(req->path);
@@ -45,11 +46,12 @@ void free_request(request *req) {
 	mem_free((*req)->method);
 	mem_free((*req)->path);
 	if((*req)->query_allocated) {
-		free((*req)->query);
+		mem_free((*req)->query);
 	}
   if((*req)->body_allocated) {
-		free((*req)->body);
+		mem_free((*req)->body);
 	}
+	mem_free((*req)->cookies);
 
 	mem_free(*req);
 	*req = NULL;

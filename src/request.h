@@ -6,6 +6,7 @@ typedef struct sRequest {
   char *path;
   char *query;
   char *body;
+  char *cookies;
   int query_allocated;
   int body_allocated;
 } *request;

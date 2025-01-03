@@ -10,6 +10,7 @@
 #include <mysql/mysql.h>
 
 typedef struct sUser {
+  int id;
   char name[30];
   char email[30];
   char password[30];

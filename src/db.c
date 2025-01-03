@@ -20,6 +20,8 @@ void init_db(MYSQL **con) {
 
   if (mysql_real_connect(*con, "127.0.0.1", "user", "password", "webserver", 0, NULL, 0) == NULL) {
     fprintf(stderr, "%s\n", mysql_error(*con));
+    mysql_close(*con);
+    *con = NULL;
     return;
   }
 

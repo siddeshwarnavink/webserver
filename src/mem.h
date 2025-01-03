@@ -40,4 +40,9 @@ void mem_free(void *ptr);
  */
 void mem_free_all();
 
+/*
+ * Use `strdup` string function in memory allocator
+ */
+char* mem_strdup(const char* s);
+
 #endif

@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "mem.h"
 #include "log.h"
@@ -79,4 +80,13 @@ void mem_free_all() {
 
   freel->size = MEMPOOL - MEMBLOCK_SIZE;
   freel->next = NULL;
+}
+
+char* mem_strdup(const char* s) {
+  size_t len = strlen(s) + 1;
+  char* copy = (char*)mem_alloc(len);
+  if (copy != NULL) {
+    memcpy(copy, s, len);
+  }
+  return copy;
 }

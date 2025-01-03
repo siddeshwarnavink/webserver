@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <mysql/mysql.h>
+#include <stdlib.h>
 
 #include "user.h"
 #include "mem.h"
@@ -29,7 +30,7 @@ int insert_user(MYSQL *con, user u) {
 
 user get_user_by_email(MYSQL *con, const char *email) {
   char query[1024];
-  snprintf(query, sizeof(query), "SELECT name, email, password FROM users WHERE email='%s'", email);
+  snprintf(query, sizeof(query), "SELECT id, name, email, password FROM users WHERE email='%s'", email);
 
   if(mysql_query(con, query)) {
     LOG("%s\n", mysql_error(con));
@@ -51,9 +52,10 @@ user get_user_by_email(MYSQL *con, const char *email) {
   }
 
   user u = mem_alloc(sizeof(struct sUser));
-  strncpy(u->name, row[0], 30);
-  strncpy(u->email, row[1], 30);
-  strncpy(u->password, row[2], 30);
+  u->id = atoi(row[0]);
+  strncpy(u->name, row[1], 30);
+  strncpy(u->email, row[2], 30);
+  strncpy(u->password, row[3], 30);
 
   mysql_free_result(res);
 
