@@ -1,9 +1,15 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #include "controller.h"
+#include "mem.h"
 #include "template.h"
 #include "log.h"
 #include "user.h"
@@ -15,7 +21,7 @@ void _internal_error(int client_socket) {
 }
 
 void _render_html(int client_socket, const char *html) {
-  char *response = malloc(strlen(html) + 256);
+  char *response = (char *)mem_alloc(strlen(html) + 256);
   if(!response) {
     LOG("Failed to allocate memory for response\n");
     _internal_error(client_socket);
@@ -32,7 +38,7 @@ void _render_html(int client_socket, const char *html) {
       html);
   write(client_socket, response, strlen(response));
   close(client_socket);
-  free(response);
+  mem_free(response);
 }
 
 void ping_controller(context ctx, int client_socket, const request request) {
@@ -68,7 +74,7 @@ void home_controller(context ctx, int client_socket, const request request) {
     return;
   }
   _render_html(client_socket, response_html);
-  free(response_html);
+  mem_free(response_html);
 }
 
 void post_register_controller(context ctx, int client_socket, const request request) {
@@ -89,9 +95,9 @@ void post_register_controller(context ctx, int client_socket, const request requ
 
     if(email_usr != NULL) {
       values[0] = "Email used";
-      free(email_usr);
+      mem_free(email_usr);
     } else {
-      user u = malloc(sizeof(struct sUser));
+      user u = (user)mem_alloc(sizeof(struct sUser));
       strncpy(u->name, name, 30);
       strncpy(u->email, email, 30);
       strncpy(u->password, password, 30);
@@ -102,7 +108,7 @@ void post_register_controller(context ctx, int client_socket, const request requ
         values[0] = "Failed!";
       }
 
-      free(u);
+      mem_free(u);
     }
 
     values[1] = name;
@@ -116,10 +122,10 @@ void post_register_controller(context ctx, int client_socket, const request requ
     return;
   }
   _render_html(client_socket, response_html);
-  free(response_html);
-  if (name) free(name);
-  if (email) free(email);
-  if (password) free(password);
+  mem_free(response_html);
+  if (name) mem_free(name);
+  if (email) mem_free(email);
+  if (password) mem_free(password);
 }
 
 void register_controller(context ctx, int client_socket, const request request) {
@@ -132,7 +138,7 @@ void register_controller(context ctx, int client_socket, const request request) 
     return;
   }
   _render_html(client_socket, response_html);
-  free(response_html);
+  mem_free(response_html);
 }
 
 void login_controller(context ctx, int client_socket, const request request) {
@@ -145,7 +151,7 @@ void login_controller(context ctx, int client_socket, const request request) {
     return;
   }
   _render_html(client_socket, response_html);
-  free(response_html);
+  mem_free(response_html);
 }
 
 void post_login_controller(context ctx, int client_socket, const request request) {
@@ -173,9 +179,9 @@ void post_login_controller(context ctx, int client_socket, const request request
     return;
   }
   _render_html(client_socket, response_html);
-  free(response_html);
-  if (email) free(email);
-  if (password) free(password);
+  mem_free(response_html);
+  if (email) mem_free(email);
+  if (password) mem_free(password);
 }
 
 
@@ -193,5 +199,5 @@ void profile_controller(context ctx, int client_socket, const request request) {
   }
 
   _render_html(client_socket, response_html);
-  free(response_html);
+  mem_free(response_html);
 }

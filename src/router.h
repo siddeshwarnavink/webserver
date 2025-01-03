@@ -1,3 +1,11 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * router.h: Handle routing of requests.
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #ifndef ROUTER_H
 #define ROUTER_H
 
@@ -31,16 +39,10 @@ void add_route(const char *method, const char *path,
  * @param path The path to match
  * @param controller The controller function to call
  */
-
 void handle_request(context ctx, const request request, int client_socket);
 
 /*
- * Match a route to a request
- * @param route_path The path of the route
- * @param request_path The path of the request
- * @param param_value The value of the parameter
- * @return 1 if the route matches, 0 otherwise
+ * Free memory used by routes
  */
-static int match_route(const char *route_path, const char *request_path, char *param_value);
 
 #endif

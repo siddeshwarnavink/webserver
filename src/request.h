@@ -1,7 +1,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-typedef struct {
+typedef struct sRequest {
   char *method;
   char *path;
   char *query;

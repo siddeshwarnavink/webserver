@@ -1,9 +1,15 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <mysql/mysql.h>
 
 #include "user.h"
+#include "mem.h"
 #include "log.h"
 
 int insert_user(MYSQL *con, user u) {
@@ -44,7 +50,7 @@ user get_user_by_email(MYSQL *con, const char *email) {
     return NULL;
   }
 
-  user u = malloc(sizeof(struct sUser));
+  user u = mem_alloc(sizeof(struct sUser));
   strncpy(u->name, row[0], 30);
   strncpy(u->email, row[1], 30);
   strncpy(u->password, row[2], 30);

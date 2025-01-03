@@ -1,3 +1,11 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * log.h - Log debug messages
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #ifndef LOG_H
 #define LOG_H
 

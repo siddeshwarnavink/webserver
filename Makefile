@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude -g -ggdb -DDEBUG $(shell mysql_config --cflags)
+CFLAGS = -Wall -Wextra -Iinclude -Wno-unused-parameter -g -ggdb -DDEBUG $(shell mysql_config --cflags)
 LDFLAGS = $(shell mysql_config --libs)
 
 SRCS = $(wildcard src/*.c)

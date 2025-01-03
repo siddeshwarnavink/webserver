@@ -1,3 +1,9 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * webserver - Production-ready web server built from scratch.
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +113,7 @@ int main() {
 
   signal(SIGINT, handle_sigint);
 
+  mem_init();
   init_db(&ctx.con);
 
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
@@ -169,4 +176,7 @@ int main() {
     }
     handle_client(client_socket);
   }
+
+  _clenup();
+  return 0;
 }

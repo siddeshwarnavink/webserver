@@ -1,41 +1,49 @@
-#include <stdlib.h>
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * request.c - Handle HTTP request
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "request.h"
 #include "mem.h"
+#include "log.h"
 
 request init_request() {
-	request req = (request)malloc(sizeof(*req));
+	request req = (request)mem_alloc(sizeof(struct sRequest));
 	if(req == NULL) {
 		return NULL;
 	}
 
-	req->method = (char *)malloc(16 * sizeof(char));
-	req->path = (char *)malloc(256 * sizeof(char));
+	req->method = (char *)mem_alloc(16 * sizeof(char));
+	req->path = (char *)mem_alloc(256 * sizeof(char));
 	req->query = NULL;
 	req->query_allocated = 0;
 	req->body = NULL;
 	req->body_allocated = 0;
 	if (req->method == NULL || req->path == NULL) {
-		free(req->method);
-		free(req->path);
-		free(req);
+		mem_free(req->method);
+		mem_free(req->path);
+		mem_free(req);
 		return NULL;
 	}
-
-	mem_add(&req, free_request);
 
 	return req;
 }
 
 void free_request(request *req) {
-	if (req == NULL || *req == NULL) {
+	if (*req == NULL) {
+		LOG("Request already freed\n");
 		return;
 	}
 
-	free((*req)->method);
-	free((*req)->path);
+	mem_free((*req)->method);
+	mem_free((*req)->path);
 	if((*req)->query_allocated) {
 		free((*req)->query);
 	}
@@ -43,7 +51,7 @@ void free_request(request *req) {
 		free((*req)->body);
 	}
 
-	free(*req);
+	mem_free(*req);
 	*req = NULL;
 }
 
@@ -60,8 +68,7 @@ char *get_request_body(request req, const char *field) {
 	char *value_end = strchr(key_start, '&');
 	size_t value_len = value_end ? (size_t)(value_end - key_start) : strlen(key_start);
 
-	char *value = (char *)malloc(value_len + 1);
-	mem_add(value, NULL);
+	char *value = (char *)mem_alloc(value_len + 1);
 
 	if (!value) {
 		perror("Failed to allocate memory for value");
@@ -70,7 +77,7 @@ char *get_request_body(request req, const char *field) {
 	strncpy(value, key_start, value_len);
 	value[value_len] = '\0';
 
-	char *decoded_value = (char *)malloc(value_len + 1);
+	char *decoded_value = (char *)mem_alloc(value_len + 1);
 	if (!decoded_value) {
 		perror("Failed to allocate memory for decoded value");
 		exit(EXIT_FAILURE);
@@ -93,7 +100,6 @@ char *get_request_body(request req, const char *field) {
 	}
 	*dest = '\0';
 
-	free(value);
-	value = NULL;
+	mem_free(value);
 	return decoded_value;
 }

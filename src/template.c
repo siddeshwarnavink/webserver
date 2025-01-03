@@ -1,8 +1,16 @@
+/* vi:set ts=2 sts=2 sw=2 et:
+ *
+ * template.c - HTML Template rendering engine
+ *
+ * Part of webserver project
+ * by Siddeshwar <siddeshwar.work@gmail.com>
+ */
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "template.h"
+#include "mem.h"
 #include "log.h"
 
 static char *_read_file(const char *path) {
@@ -16,7 +24,7 @@ static char *_read_file(const char *path) {
   long length = ftell(file);
   fseek(file, 0, SEEK_SET);
 
-  char *content = (char *)malloc(length + 1);
+  char *content = (char *)mem_alloc(length + 1);
   if (!content) {
     perror("Failed to allocate memory for template content");
     fclose(file);
@@ -41,10 +49,10 @@ char *render_template(const char *path, const char *placeholders[], const char *
     return NULL;
   }
 
-  char *rendered = (char *)malloc(strlen(template) + 1);
+  char *rendered = (char *)mem_alloc(strlen(template) + 1);
   if (!rendered) {
     LOG("Failed to allocate memory for rendered template\n");
-    free(template);
+    mem_free(template);
     return NULL;
   }
 
@@ -61,8 +69,8 @@ char *render_template(const char *path, const char *placeholders[], const char *
 
       if (template[placeholder_end] == '\0') {
         LOG("Invalid placeholder in template\n");
-        free(template);
-        free(rendered);
+        mem_free(template);
+        mem_free(rendered);
         return NULL;
       }
 
@@ -80,8 +88,8 @@ char *render_template(const char *path, const char *placeholders[], const char *
 
       if (!value) {
         LOG("No value found for placeholder: %s\n", placeholder);
-        free(template);
-        free(rendered);
+        mem_free(template);
+        mem_free(rendered);
         return NULL;
       }
 
@@ -101,6 +109,6 @@ char *render_template(const char *path, const char *placeholders[], const char *
 
   LOG("Rendered template: %s\n", rendered);
 
-  free(template);
+  mem_free(template);
   return rendered;
 }
